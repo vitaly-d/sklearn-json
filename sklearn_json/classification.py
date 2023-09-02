@@ -244,16 +244,17 @@ def serialize_svm(model):
 
 def deserialize_svm(model_dict):
     model = svm.SVC(**model_dict['params'])
+    setattr(model, "__sklearn_is_fitted__", lambda: True)
     model.shape_fit_ = model_dict['shape_fit_']
     model._gamma = model_dict['_gamma']
 
     model.class_weight_ = np.array(model_dict['class_weight_']).astype(np.float64)
     model.classes_ = np.array(model_dict['classes_'])
     model.support_ = np.array(model_dict['support_']).astype(np.int32)
-    model.n_support_ = np.array(model_dict['n_support_']).astype(np.int32)
+    model._n_support = np.array(model_dict['n_support_']).astype(np.int32)
     model.intercept_ = np.array(model_dict['intercept_']).astype(np.float64)
-    model.probA_ = np.array(model_dict['probA_']).astype(np.float64)
-    model.probB_ = np.array(model_dict['probB_']).astype(np.float64)
+    model._probA = np.array(model_dict['probA_']).astype(np.float64)
+    model._probB = np.array(model_dict['probB_']).astype(np.float64)
     model._intercept_ = np.array(model_dict['_intercept_']).astype(np.float64)
 
     if 'meta' in model_dict['support_vectors_'] and model_dict['support_vectors_']['meta'] == 'csr':
@@ -272,6 +273,9 @@ def deserialize_svm(model_dict):
         model._dual_coef_ = csr.deserialize_csr_matrix(model_dict['_dual_coef_'])
     else:
         model._dual_coef_ = np.array(model_dict['_dual_coef_']).astype(np.float64)
+
+    delattr(model, "__sklearn_is_fitted__")
+    
 
     return model
 
